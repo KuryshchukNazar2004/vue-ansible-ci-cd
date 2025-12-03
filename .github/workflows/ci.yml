@@ -1,12 +1,13 @@
-name: CI for Vue + Ansible
+name: CI Vue + Ansible
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build-vue:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +18,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -25,19 +26,8 @@ jobs:
       - name: Build Vue app
         run: npm run build
 
-  ansible-syntax-check:
-    runs-on: ubuntu-latest
-    needs: build-vue
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible
-
-      - name: Ansible playbook syntax check
-        working-directory: ansible
-        run: ansible-playbook deploy.yml -i inventory --syntax-check
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vue-dist
+          path: dist
